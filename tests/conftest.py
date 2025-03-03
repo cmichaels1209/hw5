@@ -1,52 +1,70 @@
-# conftest.py
+"""
+This module contains tests for the calculator operations and Calculation class.
+
+The tests are designed to verify the correctness of basic arithmetic operations
+(addition, subtraction, multiplication, division) implemented in the calculator.operations module,
+as well as the functionality of the Calculation class that encapsulates these operations.
+"""
+
+# Import statements:
+# Disable specific pylint warnings that are not relevant for this test file.
+# Import the Decimal class for precise decimal arithmetic, which is especially useful in financial calculations.
+# Import pytest for writing test cases.
+# Import the Calculation class from the calculator package to test its functionality.
+# Import the arithmetic operation functions (add, subtract, multiply, divide) to be tested.
+# pylint: disable=unnecessary-dunder-call, invalid-name
+
 from decimal import Decimal
-#import random
-#import pytest
-from faker import Faker
+import pytest
+from calculator.calculation import Calculation
 from calculator.operations import add, subtract, multiply, divide
 
-fake = Faker()
+# pytest.mark.parametrize decorator is used to parameterize a test function, enabling it to be called
+# with different sets of arguments. Here, it's used to test various scenarios of arithmetic operations
+# with both integer and decimal operands to ensure the operations work correctly under different conditions.
 
-def generate_test_data(num_records):
-    # Define operation mappings for both Calculator and Calculation tests
-    operation_mappings = {
-        'add': add,
-        'subtract': subtract,
-        'multiply': multiply,
-        'divide': divide
-    }
-    # Generate test data
-    for _ in range(num_records):
-        a = Decimal(fake.random_number(digits=2))
-        b = Decimal(fake.random_number(digits=2)) if _ % 4 != 3 else Decimal(fake.random_number(digits=1))
-        operation_name = fake.random_element(elements=list(operation_mappings.keys()))
-        operation_func = operation_mappings[operation_name]
+def test_operations():
+    """Test multiple operations in one function."""
+    assert add(Decimal('10'), Decimal('5')) == Decimal('15')
+    assert subtract(Decimal('10'), Decimal('5')) == Decimal('5')  # Now used
+    assert multiply(Decimal('10'), Decimal('5')) == Decimal('50')  # Now used
+    assert divide(Decimal('10'), Decimal('5')) == Decimal('2')
 
-        # Ensure b is not zero for divide operation to prevent division by zero in expected calculation
-        if operation_func is divide:
-            b = Decimal('1') if b == Decimal('0') else b
+def test_calculation_operations(a, b, operation, expected):
+    """
+    Test calculation operations with various scenarios.
 
-        try:
-            if operation_func is divide and b == Decimal('0'):
-                expected = "ZeroDivisionError"
-            else:
-                expected = operation_func(a, b)
-        except ZeroDivisionError:
-            expected = "ZeroDivisionError"
+    This test ensures that the Calculation class correctly performs the arithmetic operation
+    (specified by the 'operation' parameter) on two Decimal operands ('a' and 'b'),
+    and that the result matches the expected outcome.
 
-        yield a, b, operation_name, operation_func, expected
+    Parameters:
+        a (Decimal): The first operand in the calculation.
+        b (Decimal): The second operand in the calculation.
+        operation (function): The arithmetic operation to perform.
+        expected (Decimal): The expected result of the operation.
+    """
+    calc = Calculation(a, b, operation)  # Create a Calculation instance with the provided operands and operation.
+    assert calc.perform() == expected, f"Failed {operation.__name__} operation with {a} and {b}"  # Perform the operation and assert that the result matches the expected value.
 
-def pytest_addoption(parser):
-    parser.addoption("--num_records", action="store", default=5, type=int, help="Number of test records to generate")
+def test_calculation_repr():
+    """
+    Test the string representation (__repr__) of the Calculation class.
 
-def pytest_generate_tests(metafunc):
-    # Check if the test is expecting any of the dynamically generated fixtures
-    if {"a", "b", "expected"}.intersection(set(metafunc.fixturenames)):
-        num_records = metafunc.config.getoption("num_records")
-        # Adjust the parameterization to include both operation_name and operation for broad compatibility
-        # Ensure 'operation_name' is used for identifying the operation in Calculator class tests
-        # 'operation' (function reference) is used for Calculation class tests.
-        parameters = list(generate_test_data(num_records))
-        # Modify parameters to fit test functions' expectations
-        modified_parameters = [(a, b, op_name if 'operation_name' in metafunc.fixturenames else op_func, expected) for a, b, op_name, op_func, expected in parameters]
-        metafunc.parametrize("a,b,operation,expected", modified_parameters)
+    This test verifies that the __repr__ method of a Calculation instance returns a string
+    that accurately represents the state of the Calculation object, including its operands and operation.
+    """
+    calc = Calculation(Decimal('10'), Decimal('5'), add)  # Create a Calculation instance for testing.
+    expected_repr = "Calculation(10, 5, add)"  # Define the expected string representation.
+    assert calc.__repr__() == expected_repr, "The __repr__ method output does not match the expected string."  # Assert that the actual string representation matches the expected string.
+
+def test_divide_by_zero():
+    """
+    Test division by zero to ensure it raises a ValueError.
+
+    This test checks that attempting to perform a division operation with a zero divisor
+    correctly raises a ValueError, as dividing by zero is mathematically undefined and should be handled as an error.
+    """
+    calc = Calculation(Decimal('10'), Decimal('0'), divide)  # Create a Calculation instance with a zero divisor.
+    with pytest.raises(ValueError, match="Cannot divide by zero"):  # Expect a ValueError to be raised.
+        calc.perform()  # Attempt to perform the calculation, which should trigger the ValueError.

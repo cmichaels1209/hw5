@@ -1,4 +1,5 @@
 '''My Calculator Test'''
+
 # Correct the import order by placing standard library imports before third-party library imports,
 # adhering to PEP 8 guidelines for import ordering.
 from decimal import Decimal
