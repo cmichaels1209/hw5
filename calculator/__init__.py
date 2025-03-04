@@ -1,4 +1,4 @@
-from calculator.calculation import Calculations # Manages history of calculations
+from calculator.calculations import Calculations # Manages history of calculations
 from calculator.operations import add, subtract, multiply, divide #Arithmetic operations
 from calculator.calculation import Calculation  # Represents a single calculation
 from decimal import Decimal  # For high-precision arithmetic

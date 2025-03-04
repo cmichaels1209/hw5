@@ -1,4 +1,5 @@
-'''My Calculator Test'''
+"""My Calculator Test"""
+
 # Correct the import order by placing standard library imports before third-party library imports,
 # adhering to PEP 8 guidelines for import ordering.
 from decimal import Decimal
@@ -12,6 +13,7 @@ from calculator.calculations import Calculations
 # Import arithmetic operation functions (add and subtract) to be tested.
 from calculator.operations import add, subtract
 
+
 # pytest.fixture is a decorator that marks a function as a fixture,
 # a setup mechanism used by pytest to initialize a test environment.
 # Here, it's used to define a fixture that prepares the test environment for calculations tests.
@@ -23,18 +25,20 @@ def setup_calculations():
     # Add sample calculations to the history to set up a known state for testing.
     # These calculations represent typical use cases and allow tests to verify that
     # the history functionality is working as expected.
-    Calculations.add_calculation(Calculation(Decimal('10'), Decimal('5'), add))
-    Calculations.add_calculation(Calculation(Decimal('20'), Decimal('3'), subtract))
+    Calculations.add_calculation(Calculation(Decimal("10"), Decimal("5"), add))
+    Calculations.add_calculation(Calculation(Decimal("20"), Decimal("3"), subtract))
+
 
 def test_add_calculation(setup_calculations):
     """Test adding a calculation to the history."""
     # Create a new Calculation object to add to the history.
-    calc = Calculation(Decimal('2'), Decimal('2'), add)
+    calc = Calculation(Decimal("2"), Decimal("2"), add)
     # Add the calculation to the history.
     Calculations.add_calculation(calc)
     # Assert that the calculation was added to the history by checking
     # if the latest calculation in the history matches the one we added.
     assert Calculations.get_latest() == calc, "Failed to add the calculation to the history"
+
 
 def test_get_history(setup_calculations):
     """Test retrieving the entire calculation history."""
@@ -44,12 +48,14 @@ def test_get_history(setup_calculations):
     # which matches our setup in the setup_calculations fixture.
     assert len(history) == 2, "History does not contain the expected number of calculations"
 
+
 def test_clear_history(setup_calculations):
     """Test clearing the entire calculation history."""
     # Clear the calculation history.
     Calculations.clear_history()
     # Assert that the history is empty by checking its length.
     assert len(Calculations.get_history()) == 0, "History was not cleared"
+
 
 def test_get_latest(setup_calculations):
     """Test getting the latest calculation from the history."""
@@ -58,7 +64,8 @@ def test_get_latest(setup_calculations):
     # Assert that the latest calculation matches the expected values,
     # specifically the operands and operation used in the last added calculation
     # in the setup_calculations fixture.
-    assert latest.a == Decimal('20') and latest.b == Decimal('3'), "Did not get the correct latest calculation"
+    assert latest.a == Decimal("20") and latest.b == Decimal("3"), "Did not get the correct latest calculation"
+
 
 def test_find_by_operation(setup_calculations):
     """Test finding calculations in the history by operation type."""
@@ -70,6 +77,7 @@ def test_find_by_operation(setup_calculations):
     subtract_operations = Calculations.find_by_operation("subtract")
     # Assert that exactly one calculation with the 'subtract' operation was found.
     assert len(subtract_operations) == 1, "Did not find the correct number of calculations with subtract operation"
+
 
 def test_get_latest_with_empty_history():
     """Test getting the latest calculation when the history is empty."""
